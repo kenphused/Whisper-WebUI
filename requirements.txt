@@ -13,7 +13,7 @@ matplotlib
 torch>=2.8.0,<2.9.0 # Needs to be harmonized with torchaudio
 torchaudio>=2.8.0,<2.9.0 # 2.9 deprecates used functions
 setuptools==82.0.1 # Pinned to work around pkg_resources deprecation
-git+https://github.com/jhj0517/jhj0517-whisper.git
+openai-whisper
 faster-whisper==1.2.1
 transformers==4.57.6
 gradio==5.50.0

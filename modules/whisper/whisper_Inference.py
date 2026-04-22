@@ -73,8 +73,7 @@ class WhisperInference(BaseTranscriptionPipeline):
                                        best_of=params.best_of,
                                        patience=params.patience,
                                        temperature=params.temperature,
-                                       compression_ratio_threshold=params.compression_ratio_threshold,
-                                       progress_callback=progress_callback,)["segments"]
+                                       compression_ratio_threshold=params.compression_ratio_threshold,)["segments"]
         segments_result = []
         for segment in result:
             segments_result.append(Segment(
