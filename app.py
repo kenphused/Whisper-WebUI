@@ -74,7 +74,7 @@ class App:
                                                             compute_type=self.whisper_inf.current_compute_type)
 
         with gr.Accordion(_("Background Music Remover Filter"), open=False):
-            uvr_inputs = BGMSeparationParams.to_gradio_input(defaults=uvr_params,
+            uvr_inputs = BGMSeparationParams.to_gradio_inputs(defaults=uvr_params,
                                                              available_models=self.whisper_inf.music_separator.available_models,
                                                              available_devices=self.whisper_inf.music_separator.available_devices,
                                                              device=self.whisper_inf.music_separator.device)

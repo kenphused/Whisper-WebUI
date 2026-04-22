@@ -11,6 +11,7 @@ import traceback
 
 from modules.utils.paths import DEFAULT_PARAMETERS_CONFIG_PATH, UVR_MODELS_DIR, UVR_OUTPUT_DIR
 from modules.utils.files_manager import load_yaml, save_yaml, is_video
+from modules.utils.device_utils import get_device
 from modules.diarize.audio_loader import load_audio
 from modules.utils.logger import get_logger
 logger = get_logger()
@@ -30,7 +31,7 @@ class MusicSeparator:
                  model_dir: Optional[str] = UVR_MODELS_DIR,
                  output_dir: Optional[str] = UVR_OUTPUT_DIR):
         self.model = None
-        self.device = self.get_device()
+        self.device = get_device()
         self.available_devices = ["cpu", "cuda", "xpu", "mps"]
         self.model_dir = model_dir
         self.output_dir = output_dir
@@ -166,17 +167,6 @@ class MusicSeparator:
                 progress=progress
             )
         return file_paths
-
-    @staticmethod
-    def get_device():
-        if torch.cuda.is_available():
-            return "cuda"
-        if torch.xpu.is_available():
-            return "xpu"
-        elif torch.backends.mps.is_available():
-            return "mps"
-        else:
-            return "cpu"
 
     def offload(self):
         """Offload the model and free up the memory"""

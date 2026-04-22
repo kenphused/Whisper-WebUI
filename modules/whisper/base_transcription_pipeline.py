@@ -4,12 +4,11 @@ import ctranslate2
 import gradio as gr
 import torchaudio
 from abc import ABC, abstractmethod
-from typing import BinaryIO, Union, Tuple, List, Callable
+from typing import Union, Tuple, List, Callable
 import numpy as np
 from datetime import datetime
 from faster_whisper.vad import VadOptions
 import gc
-from copy import deepcopy
 import time
 
 from modules.uvr.music_separator import MusicSeparator
@@ -59,7 +58,7 @@ class BaseTranscriptionPipeline(ABC):
 
     @abstractmethod
     def transcribe(self,
-                   audio: Union[str, BinaryIO, np.ndarray],
+                   audio: Union[str, np.ndarray],
                    progress: gr.Progress = gr.Progress(),
                    progress_callback: Optional[Callable] = None,
                    *whisper_params,
@@ -77,7 +76,7 @@ class BaseTranscriptionPipeline(ABC):
         pass
 
     def run(self,
-            audio: Union[str, BinaryIO, np.ndarray],
+            audio: Union[str, np.ndarray],
             progress: gr.Progress = gr.Progress(),
             file_format: str = "SRT",
             add_timestamp: bool = True,
@@ -136,17 +135,21 @@ class BaseTranscriptionPipeline(ABC):
 
             if audio.ndim >= 2:
                 audio = audio.mean(axis=1)
-                if self.music_separator.audio_info is None:
-                    origin_sample_rate = 16000
-                else:
-                    origin_sample_rate = self.music_separator.audio_info.sample_rate
+                origin_sample_rate = (
+                    self.music_separator.audio_info.sample_rate
+                    if self.music_separator.audio_info is not None
+                    else 16000
+                )
                 audio = self.resample_audio(audio=audio, original_sample_rate=origin_sample_rate)
+
+            if audio.size == 0:
+                raise ValueError("Audio is empty after BGM separation.")
 
             if bgm_params.enable_offload:
                 self.music_separator.offload()
             elapsed_time_bgm_sep = time.time() - start_time
 
-        origin_audio = deepcopy(audio)
+        origin_audio = audio.copy() if isinstance(audio, np.ndarray) else audio
 
         if vad_params.vad_filter:
             progress(0, desc="Filtering silent parts from audio..")
@@ -167,6 +170,7 @@ class BaseTranscriptionPipeline(ABC):
             if vad_processed.size > 0:
                 audio = vad_processed
             else:
+                logger.warning("VAD detected no speech; proceeding with full audio.")
                 vad_params.vad_filter = False
 
         result, elapsed_time_transcription = self.transcribe(

@@ -1,4 +1,3 @@
-import functools
 import uuid
 import numpy as np
 from fastapi import (
@@ -7,7 +6,7 @@ from fastapi import (
 )
 import gradio as gr
 from fastapi import APIRouter, BackgroundTasks, Depends, Response, status
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from sqlalchemy.orm import Session
 from datetime import datetime
 from modules.whisper.data_classes import *
@@ -25,6 +24,8 @@ from backend.db.task.models import TaskStatus, TaskType
 
 transcription_router = APIRouter(prefix="/transcription", tags=["Transcription"])
 
+_pipeline_cache: Dict[Tuple[str, str], "FasterWhisperInference"] = {}
+
 
 def create_progress_callback(identifier: str):
     def progress_callback(progress_value: float):
@@ -40,17 +41,14 @@ def create_progress_callback(identifier: str):
     return progress_callback
 
 
-@functools.lru_cache
-def get_pipeline() -> 'FasterWhisperInference':
+def get_pipeline() -> "FasterWhisperInference":
     config = load_server_config()["whisper"]
-    inferencer = FasterWhisperInference(
-        output_dir=BACKEND_CACHE_DIR
-    )
-    inferencer.update_model(
-        model_size=config["model_size"],
-        compute_type=config["compute_type"]
-    )
-    return inferencer
+    key: Tuple[str, str] = (config["model_size"], config["compute_type"])
+    if key not in _pipeline_cache:
+        inferencer = FasterWhisperInference(output_dir=BACKEND_CACHE_DIR)
+        inferencer.update_model(model_size=config["model_size"], compute_type=config["compute_type"])
+        _pipeline_cache[key] = inferencer
+    return _pipeline_cache[key]
 
 
 def run_transcription(

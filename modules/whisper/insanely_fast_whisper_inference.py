@@ -1,7 +1,7 @@
 import os
 import time
 import numpy as np
-from typing import BinaryIO, Union, Tuple, List, Callable
+from typing import Union, Tuple, List, Callable
 import torch
 from transformers import pipeline
 from transformers.utils import is_flash_attn_2_available
@@ -140,12 +140,18 @@ class InsanelyFastWhisperInference(BaseTranscriptionPipeline):
                 progress=progress
             )
 
+        _dtype_map = {
+            "float16": torch.float16,
+            "bfloat16": torch.bfloat16,
+            "float32": torch.float32,
+            "int8": torch.int8,
+        }
         self.current_compute_type = compute_type
         self.current_model_size = model_size
         self.model = pipeline(
             "automatic-speech-recognition",
             model=os.path.join(self.model_dir, model_size),
-            torch_dtype=self.current_compute_type,
+            torch_dtype=_dtype_map.get(compute_type, torch.float32),
             device=self.device,
             model_kwargs={"attn_implementation": "flash_attention_2"} if is_flash_attn_2_available() else {"attn_implementation": "sdpa"},
         )

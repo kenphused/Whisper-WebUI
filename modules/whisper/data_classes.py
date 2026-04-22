@@ -120,18 +120,18 @@ class VadParams(BaseParams):
         return [
             gr.Checkbox(
                 label=_("Enable Silero VAD Filter"),
-                value=defaults.get("vad_filter", cls.__fields__["vad_filter"].default),
+                value=defaults.get("vad_filter", cls.model_fields["vad_filter"].default),
                 interactive=True,
                 info=_("Enable this to transcribe only detected voice")
             ),
             gr.Slider(
                 minimum=0.0, maximum=1.0, step=0.01, label="Speech Threshold",
-                value=defaults.get("threshold", cls.__fields__["threshold"].default),
+                value=defaults.get("threshold", cls.model_fields["threshold"].default),
                 info="Lower it to be more sensitive to small sounds."
             ),
             gr.Number(
                 label="Minimum Speech Duration (ms)", precision=0,
-                value=defaults.get("min_speech_duration_ms", cls.__fields__["min_speech_duration_ms"].default),
+                value=defaults.get("min_speech_duration_ms", cls.model_fields["min_speech_duration_ms"].default),
                 info="Final speech chunks shorter than this time are thrown out"
             ),
             gr.Number(
@@ -141,12 +141,12 @@ class VadParams(BaseParams):
             ),
             gr.Number(
                 label="Minimum Silence Duration (ms)", precision=0,
-                value=defaults.get("min_silence_duration_ms", cls.__fields__["min_silence_duration_ms"].default),
+                value=defaults.get("min_silence_duration_ms", cls.model_fields["min_silence_duration_ms"].default),
                 info="In the end of each speech chunk wait for this time before separating it"
             ),
             gr.Number(
                 label="Speech Padding (ms)", precision=0,
-                value=defaults.get("speech_pad_ms", cls.__fields__["speech_pad_ms"].default),
+                value=defaults.get("speech_pad_ms", cls.model_fields["speech_pad_ms"].default),
                 info="Final speech chunks are padded by this time each side"
             )
         ]
@@ -173,7 +173,7 @@ class DiarizationParams(BaseParams):
         return [
             gr.Checkbox(
                 label=_("Enable Diarization"),
-                value=defaults.get("is_diarize", cls.__fields__["is_diarize"].default),
+                value=defaults.get("is_diarize", cls.model_fields["is_diarize"].default),
             ),
             gr.Dropdown(
                 label=_("Device"),
@@ -182,12 +182,12 @@ class DiarizationParams(BaseParams):
             ),
             gr.Textbox(
                 label=_("HuggingFace Token"),
-                value=defaults.get("hf_token", cls.__fields__["hf_token"].default),
+                value=defaults.get("hf_token", cls.model_fields["hf_token"].default),
                 info=_("This is only needed the first time you download the model")
             ),
             gr.Checkbox(
                 label=_("Offload sub model when finished"),
-                value=defaults.get("enable_offload", cls.__fields__["enable_offload"].default),
+                value=defaults.get("enable_offload", cls.model_fields["enable_offload"].default),
             )
         ]
 
@@ -215,7 +215,7 @@ class BGMSeparationParams(BaseParams):
     )
 
     @classmethod
-    def to_gradio_input(cls,
+    def to_gradio_inputs(cls,
                         defaults: Optional[Dict] = None,
                         available_devices: Optional[List] = None,
                         device: Optional[str] = None,
@@ -223,7 +223,7 @@ class BGMSeparationParams(BaseParams):
         return [
             gr.Checkbox(
                 label=_("Enable Background Music Remover Filter"),
-                value=defaults.get("is_separate_bgm", cls.__fields__["is_separate_bgm"].default),
+                value=defaults.get("is_separate_bgm", cls.model_fields["is_separate_bgm"].default),
                 interactive=True,
                 info=_("Enabling this will remove background music")
             ),
@@ -231,7 +231,7 @@ class BGMSeparationParams(BaseParams):
                 label=_("Model"),
                 choices=["UVR-MDX-NET-Inst_HQ_4",
                          "UVR-MDX-NET-Inst_3"] if available_models is None else available_models,
-                value=defaults.get("uvr_model_size", cls.__fields__["uvr_model_size"].default),
+                value=defaults.get("uvr_model_size", cls.model_fields["uvr_model_size"].default),
             ),
             gr.Dropdown(
                 label=_("Device"),
@@ -240,17 +240,17 @@ class BGMSeparationParams(BaseParams):
             ),
             gr.Number(
                 label="Segment Size",
-                value=defaults.get("segment_size", cls.__fields__["segment_size"].default),
+                value=defaults.get("segment_size", cls.model_fields["segment_size"].default),
                 precision=0,
                 info="Segment size for UVR model"
             ),
             gr.Checkbox(
                 label=_("Save separated files to output"),
-                value=defaults.get("save_file", cls.__fields__["save_file"].default),
+                value=defaults.get("save_file", cls.model_fields["save_file"].default),
             ),
             gr.Checkbox(
                 label=_("Offload sub model when finished"),
-                value=defaults.get("enable_offload", cls.__fields__["enable_offload"].default),
+                value=defaults.get("enable_offload", cls.model_fields["enable_offload"].default),
             )
         ]
 
@@ -376,7 +376,7 @@ class WhisperParams(BaseParams):
                 gr.Dropdown(
                     label=_("Model"),
                     choices=available_models,
-                    value=defaults.get("model_size", cls.__fields__["model_size"].default),
+                    value=defaults.get("model_size", cls.model_fields["model_size"].default),
                 ),
                 gr.Dropdown(
                     label=_("Language"),
@@ -385,25 +385,25 @@ class WhisperParams(BaseParams):
                 ),
                 gr.Checkbox(
                     label=_("Translate to English?"),
-                    value=defaults.get("is_translate", cls.__fields__["is_translate"].default),
+                    value=defaults.get("is_translate", cls.model_fields["is_translate"].default),
                 ),
             ]
 
         inputs += [
             gr.Number(
                 label="Beam Size",
-                value=defaults.get("beam_size", cls.__fields__["beam_size"].default),
+                value=defaults.get("beam_size", cls.model_fields["beam_size"].default),
                 precision=0,
                 info="Beam size for decoding"
             ),
             gr.Number(
                 label="Log Probability Threshold",
-                value=defaults.get("log_prob_threshold", cls.__fields__["log_prob_threshold"].default),
+                value=defaults.get("log_prob_threshold", cls.model_fields["log_prob_threshold"].default),
                 info="Threshold for average log probability of sampled tokens"
             ),
             gr.Number(
                 label="No Speech Threshold",
-                value=defaults.get("no_speech_threshold", cls.__fields__["no_speech_threshold"].default),
+                value=defaults.get("no_speech_threshold", cls.model_fields["no_speech_threshold"].default),
                 info="Threshold for detecting silence"
             ),
             gr.Dropdown(
@@ -414,24 +414,24 @@ class WhisperParams(BaseParams):
             ),
             gr.Number(
                 label="Best Of",
-                value=defaults.get("best_of", cls.__fields__["best_of"].default),
+                value=defaults.get("best_of", cls.model_fields["best_of"].default),
                 precision=0,
                 info="Number of candidates when sampling"
             ),
             gr.Number(
                 label="Patience",
-                value=defaults.get("patience", cls.__fields__["patience"].default),
+                value=defaults.get("patience", cls.model_fields["patience"].default),
                 info="Beam search patience factor"
             ),
             gr.Checkbox(
                 label="Condition On Previous Text",
-                value=defaults.get("condition_on_previous_text", cls.__fields__["condition_on_previous_text"].default),
+                value=defaults.get("condition_on_previous_text", cls.model_fields["condition_on_previous_text"].default),
                 info="Use previous output as prompt for next window"
             ),
             gr.Slider(
                 label="Prompt Reset On Temperature",
                 value=defaults.get("prompt_reset_on_temperature",
-                                   cls.__fields__["prompt_reset_on_temperature"].default),
+                                   cls.model_fields["prompt_reset_on_temperature"].default),
                 minimum=0,
                 maximum=1,
                 step=0.01,
@@ -444,7 +444,7 @@ class WhisperParams(BaseParams):
             ),
             gr.Slider(
                 label="Temperature",
-                value=defaults.get("temperature", cls.__fields__["temperature"].default),
+                value=defaults.get("temperature", cls.model_fields["temperature"].default),
                 minimum=0.0,
                 step=0.01,
                 maximum=1.0,
@@ -453,7 +453,7 @@ class WhisperParams(BaseParams):
             gr.Number(
                 label="Compression Ratio Threshold",
                 value=defaults.get("compression_ratio_threshold",
-                                   cls.__fields__["compression_ratio_threshold"].default),
+                                   cls.model_fields["compression_ratio_threshold"].default),
                 info="Threshold for gzip compression ratio"
             )
         ]
@@ -461,17 +461,17 @@ class WhisperParams(BaseParams):
         faster_whisper_inputs = [
             gr.Number(
                 label="Length Penalty",
-                value=defaults.get("length_penalty", cls.__fields__["length_penalty"].default),
+                value=defaults.get("length_penalty", cls.model_fields["length_penalty"].default),
                 info="Exponential length penalty",
             ),
             gr.Number(
                 label="Repetition Penalty",
-                value=defaults.get("repetition_penalty", cls.__fields__["repetition_penalty"].default),
+                value=defaults.get("repetition_penalty", cls.model_fields["repetition_penalty"].default),
                 info="Penalty for repeated tokens"
             ),
             gr.Number(
                 label="No Repeat N-gram Size",
-                value=defaults.get("no_repeat_ngram_size", cls.__fields__["no_repeat_ngram_size"].default),
+                value=defaults.get("no_repeat_ngram_size", cls.model_fields["no_repeat_ngram_size"].default),
                 precision=0,
                 info="Size of n-grams to prevent repetition"
             ),
@@ -482,7 +482,7 @@ class WhisperParams(BaseParams):
             ),
             gr.Checkbox(
                 label="Suppress Blank",
-                value=defaults.get("suppress_blank", cls.__fields__["suppress_blank"].default),
+                value=defaults.get("suppress_blank", cls.model_fields["suppress_blank"].default),
                 info="Suppress blank outputs at start of sampling"
             ),
             gr.Textbox(
@@ -492,22 +492,22 @@ class WhisperParams(BaseParams):
             ),
             gr.Number(
                 label="Max Initial Timestamp",
-                value=defaults.get("max_initial_timestamp", cls.__fields__["max_initial_timestamp"].default),
+                value=defaults.get("max_initial_timestamp", cls.model_fields["max_initial_timestamp"].default),
                 info="Maximum initial timestamp"
             ),
             gr.Checkbox(
                 label="Word Timestamps",
-                value=defaults.get("word_timestamps", cls.__fields__["word_timestamps"].default),
+                value=defaults.get("word_timestamps", cls.model_fields["word_timestamps"].default),
                 info="Extract word-level timestamps"
             ),
             gr.Textbox(
                 label="Prepend Punctuations",
-                value=defaults.get("prepend_punctuations", cls.__fields__["prepend_punctuations"].default),
+                value=defaults.get("prepend_punctuations", cls.model_fields["prepend_punctuations"].default),
                 info="Punctuations to merge with next word"
             ),
             gr.Textbox(
                 label="Append Punctuations",
-                value=defaults.get("append_punctuations", cls.__fields__["append_punctuations"].default),
+                value=defaults.get("append_punctuations", cls.model_fields["append_punctuations"].default),
                 info="Punctuations to merge with previous word"
             ),
             gr.Number(
@@ -518,7 +518,7 @@ class WhisperParams(BaseParams):
             ),
             gr.Number(
                 label="Chunk Length (s)",
-                value=defaults.get("chunk_length", cls.__fields__["chunk_length"].default),
+                value=defaults.get("chunk_length", cls.model_fields["chunk_length"].default),
                 precision=0,
                 info="Length of audio segments in seconds"
             ),
@@ -530,7 +530,7 @@ class WhisperParams(BaseParams):
             ),
             gr.Textbox(
                 label="Hotwords",
-                value=defaults.get("hotwords", cls.__fields__["hotwords"].default),
+                value=defaults.get("hotwords", cls.model_fields["hotwords"].default),
                 info="Hotwords/hint phrases for the model"
             ),
             gr.Number(
@@ -542,7 +542,7 @@ class WhisperParams(BaseParams):
             gr.Number(
                 label="Language Detection Segments",
                 value=defaults.get("language_detection_segments",
-                                   cls.__fields__["language_detection_segments"].default),
+                                   cls.model_fields["language_detection_segments"].default),
                 precision=0,
                 info="Number of segments for language detection"
             )
@@ -551,7 +551,7 @@ class WhisperParams(BaseParams):
         insanely_fast_whisper_inputs = [
             gr.Number(
                 label="Batch Size",
-                value=defaults.get("batch_size", cls.__fields__["batch_size"].default),
+                value=defaults.get("batch_size", cls.model_fields["batch_size"].default),
                 precision=0,
                 info="Batch size for processing"
             )
@@ -570,7 +570,7 @@ class WhisperParams(BaseParams):
         inputs += [
             gr.Checkbox(
                 label=_("Offload sub model when finished"),
-                value=defaults.get("enable_offload", cls.__fields__["enable_offload"].default),
+                value=defaults.get("enable_offload", cls.model_fields["enable_offload"].default),
             )
         ]
 

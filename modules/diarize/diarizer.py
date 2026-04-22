@@ -1,12 +1,13 @@
 import os
 import torch
-from typing import List, Union, BinaryIO, Optional, Tuple
+from typing import List, Union, Optional, Tuple
 import numpy as np
 import time
 import logging
 import gc
 
 from modules.utils.paths import DIARIZATION_MODELS_DIR
+from modules.utils.device_utils import get_device, get_available_devices
 from modules.diarize.diarize_pipeline import DiarizationPipeline, assign_word_speakers
 from modules.diarize.audio_loader import load_audio
 from modules.whisper.data_classes import *
@@ -16,15 +17,15 @@ class Diarizer:
     def __init__(self,
                  model_dir: str = DIARIZATION_MODELS_DIR
                  ):
-        self.device = self.get_device()
-        self.available_device = self.get_available_device()
+        self.device = get_device()
+        self.available_device = get_available_devices()
         self.compute_type = "float16"
         self.model_dir = model_dir
         os.makedirs(self.model_dir, exist_ok=True)
         self.pipe = None
 
     def run(self,
-            audio: Union[str, BinaryIO, np.ndarray],
+            audio: Union[str, np.ndarray],
             transcribed_result: List[Segment],
             use_auth_token: str,
             device: Optional[str] = None
@@ -101,7 +102,7 @@ class Diarizer:
             Device for diarization.
         """
         if device is None:
-            device = self.get_device()
+            device = get_device()
         self.device = device
 
         os.makedirs(self.model_dir, exist_ok=True)
@@ -138,24 +139,3 @@ class Diarizer:
             torch.xpu.reset_peak_memory_stats()
         gc.collect()
 
-    @staticmethod
-    def get_device():
-        if torch.cuda.is_available():
-            return "cuda"
-        if torch.xpu.is_available():
-            return "xpu"
-        elif torch.backends.mps.is_available():
-            return "mps"
-        else:
-            return "cpu"
-
-    @staticmethod
-    def get_available_device():
-        devices = ["cpu"]
-        if torch.cuda.is_available():
-            devices.append("cuda")
-        if torch.xpu.is_available():
-            devices.append("xpu")
-        if torch.backends.mps.is_available():
-            devices.append("mps")
-        return devices

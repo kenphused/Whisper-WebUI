@@ -2,7 +2,7 @@
 
 from faster_whisper.vad import VadOptions, get_vad_model
 import numpy as np
-from typing import BinaryIO, Union, List, Optional, Tuple
+from typing import Union, List, Optional, Tuple
 import warnings
 import bisect
 import faster_whisper
@@ -19,7 +19,7 @@ class SileroVAD:
         self.model = None
 
     def run(self,
-            audio: Union[str, BinaryIO, np.ndarray],
+            audio: Union[str, np.ndarray],
             vad_parameters: VadOptions,
             progress: gr.Progress = gr.Progress()
             ) -> Tuple[np.ndarray, List[dict]]:

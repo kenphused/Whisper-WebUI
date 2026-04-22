@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import os
 from pyannote.audio import Pipeline
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 import torch
 
 from modules.whisper.data_classes import *
@@ -28,7 +28,7 @@ class DiarizationPipeline:
             cache_dir=cache_dir
         ).to(device)
 
-    def __call__(self, audio: Union[str, np.ndarray], min_speakers=None, max_speakers=None):
+    def __call__(self, audio: Union[str, np.ndarray], min_speakers: Optional[int] = None, max_speakers: Optional[int] = None) -> pd.DataFrame:
         if isinstance(audio, str):
             audio = load_audio(audio)
         audio_data = {
@@ -42,48 +42,49 @@ class DiarizationPipeline:
         return diarize_df
 
 
-def assign_word_speakers(diarize_df, transcript_result, fill_nearest=False):
+def assign_word_speakers(diarize_df: pd.DataFrame, transcript_result: Dict, fill_nearest: bool = False) -> Dict[str, List]:
     transcript_segments = transcript_result["segments"]
-    if transcript_segments and isinstance(transcript_segments[0], Segment):
+    if not transcript_segments:
+        return {"segments": transcript_segments}
+    if isinstance(transcript_segments[0], Segment):
         transcript_segments = [seg.model_dump() for seg in transcript_segments]
-    for seg in transcript_segments:
-        # assign speaker to segment (if any)
-        diarize_df['intersection'] = np.minimum(diarize_df['end'], seg['end']) - np.maximum(diarize_df['start'],
-                                                                                            seg['start'])
-        diarize_df['union'] = np.maximum(diarize_df['end'], seg['end']) - np.minimum(diarize_df['start'], seg['start'])
 
-        intersected = diarize_df[diarize_df["intersection"] > 0]
+    for seg in transcript_segments:
+        seg_intersection = np.minimum(diarize_df['end'], seg['end']) - np.maximum(diarize_df['start'], seg['start'])
+        intersected_mask = seg_intersection > 0
 
         speaker = None
-        if len(intersected) > 0:
-            # Choosing most strong intersection
-            speaker = intersected.groupby("speaker")["intersection"].sum().sort_values(ascending=False).index[0]
+        if intersected_mask.any():
+            intersected_df = diarize_df.loc[intersected_mask].copy()
+            intersected_df['intersection'] = seg_intersection[intersected_mask]
+            speaker = intersected_df.groupby("speaker")["intersection"].sum().sort_values(ascending=False).index[0]
         elif fill_nearest:
-            # Otherwise choosing closest
-            speaker = diarize_df.sort_values(by=["intersection"], ascending=False)["speaker"].values[0]
+            speaker = diarize_df.assign(intersection=seg_intersection).sort_values(
+                by=["intersection"], ascending=False
+            )["speaker"].values[0]
 
         if speaker is not None:
             seg["speaker"] = speaker
 
-        # assign speaker to words
         if 'words' in seg and seg['words'] is not None:
             for word in seg['words']:
                 if 'start' in word:
-                    diarize_df['intersection'] = np.minimum(diarize_df['end'], word['end']) - np.maximum(
-                        diarize_df['start'], word['start'])
-                    diarize_df['union'] = np.maximum(diarize_df['end'], word['end']) - np.minimum(diarize_df['start'],
-                                                                                                  word['start'])
-
-                    intersected = diarize_df[diarize_df["intersection"] > 0]
+                    word_intersection = np.minimum(diarize_df['end'], word['end']) - np.maximum(
+                        diarize_df['start'], word['start']
+                    )
+                    word_intersected_mask = word_intersection > 0
 
                     word_speaker = None
-                    if len(intersected) > 0:
-                        # Choosing most strong intersection
-                        word_speaker = \
-                            intersected.groupby("speaker")["intersection"].sum().sort_values(ascending=False).index[0]
+                    if word_intersected_mask.any():
+                        word_intersected_df = diarize_df.loc[word_intersected_mask].copy()
+                        word_intersected_df['intersection'] = word_intersection[word_intersected_mask]
+                        word_speaker = word_intersected_df.groupby("speaker")["intersection"].sum().sort_values(
+                            ascending=False
+                        ).index[0]
                     elif fill_nearest:
-                        # Otherwise choosing closest
-                        word_speaker = diarize_df.sort_values(by=["intersection"], ascending=False)["speaker"].values[0]
+                        word_speaker = diarize_df.assign(intersection=word_intersection).sort_values(
+                            by=["intersection"], ascending=False
+                        )["speaker"].values[0]
 
                     if word_speaker is not None:
                         word["speaker"] = word_speaker

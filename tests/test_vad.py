@@ -56,3 +56,12 @@ def test_vad(
     )
 
     assert speech_chunks
+
+    # Verify timestamp restoration maps back within original audio duration
+    original_duration = len(audio) / vad_model.sampling_rate
+    from modules.whisper.data_classes import Segment as Seg
+    fake_segment = Seg(start=0.0, end=original_duration, text="test")
+    restored = vad_model.restore_speech_timestamps([fake_segment], speech_chunks)
+    assert restored, "restore_speech_timestamps returned empty"
+    assert restored[0].start >= 0.0
+    assert restored[0].end <= original_duration + 0.1  # small tolerance for padding

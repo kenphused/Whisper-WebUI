@@ -3,7 +3,7 @@ import time
 import huggingface_hub
 import numpy as np
 import torch
-from typing import BinaryIO, Union, Tuple, List, Callable
+from typing import Union, Tuple, List, Callable
 import faster_whisper
 from faster_whisper.vad import VadOptions
 import ast
@@ -38,7 +38,7 @@ class FasterWhisperInference(BaseTranscriptionPipeline):
         self.available_models = self.model_paths.keys()
 
     def transcribe(self,
-                   audio: Union[str, BinaryIO, np.ndarray],
+                   audio: Union[str, np.ndarray],
                    progress: gr.Progress = gr.Progress(),
                    progress_callback: Optional[Callable] = None,
                    *whisper_params,
@@ -90,7 +90,7 @@ class FasterWhisperInference(BaseTranscriptionPipeline):
             suppress_blank=params.suppress_blank,
             suppress_tokens=params.suppress_tokens,
             max_initial_timestamp=params.max_initial_timestamp,
-            word_timestamps=True,  # Set it to always True as it reduces hallucinations
+            word_timestamps=params.word_timestamps,
             prepend_punctuations=params.prepend_punctuations,
             append_punctuations=params.append_punctuations,
             max_new_tokens=params.max_new_tokens,

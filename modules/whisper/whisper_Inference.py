@@ -1,7 +1,7 @@
 import whisper
 import gradio as gr
 import time
-from typing import BinaryIO, Union, Tuple, List, Callable, Optional
+from typing import Union, Tuple, List, Callable, Optional
 import numpy as np
 import torch
 import os

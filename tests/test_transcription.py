@@ -61,6 +61,16 @@ def run_asr_pipeline(
     subtitle = read_file(file_paths[0]).split("\n")
     assert calculate_wer(answer, subtitle[2].strip().replace(",", "").replace(".", "")) < 0.1
 
+    # Validate SRT structure: timestamps must be chronological
+    from modules.utils.subtitle_manager import WriteSRT
+    parsed_segments = WriteSRT(output_dir=".").to_segments(file_paths[0])
+    assert len(parsed_segments) > 0, "No segments in output file"
+    for i, seg in enumerate(parsed_segments):
+        assert seg.start >= 0.0, f"Segment {i} has negative start time"
+        assert seg.end >= seg.start, f"Segment {i} end is before start"
+    for i in range(1, len(parsed_segments)):
+        assert parsed_segments[i].start >= parsed_segments[i - 1].start, "Segments out of order"
+
     if not is_pytube_detected_bot():
         subtitle_str, file_path = whisper_inferencer.transcribe_youtube(
             TEST_YOUTUBE_URL,
