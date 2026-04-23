@@ -11,3 +11,6 @@ outputs/
 models/
 modules/yt_tmp.wav
 configs/default_parameters.yaml
+.coverage
+graphify-out/
+modules/graphify-out/

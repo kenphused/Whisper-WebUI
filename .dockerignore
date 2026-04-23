@@ -4,7 +4,37 @@ modules/yt_tmp.wav
 **/__pycache__/
 **/outputs/
 **/models/
+**/.env
 
 **/.idea
 **/.git
 **/.github
+**/.pytest_cache/
+.coverage
+
+graphify-out/
+
+# test files
+tests/
+
+# dev tooling
+.claude/
+
+# docs and planning
+README.md
+*.md
+notebook/
+
+# platform-specific scripts
+Install.bat
+Install.sh
+start-webui.bat
+start-webui.sh
+user-start-webui.bat
+docker-compose.yaml
+
+# media files
+*.wav
+*.mp3
+*.mp4
+*.png

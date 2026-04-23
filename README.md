@@ -20,7 +20,6 @@ If you wish to try this on Colab, you can do it in [here](https://colab.research
 - Currently supported subtitle formats : 
   - SRT
   - WebVTT
-  - LRC ( lyrics format with timestamps )
   - txt ( only text file without timeline )
 - Speech to Text Translation 
   - From other languages to English. ( This is Whisper's end-to-end speech-to-text translation feature )
@@ -116,22 +115,13 @@ If you want to use a fine-tuned model, manually place the models in `models/Whis
 
 Alternatively, if you enter the huggingface repo id (e.g, [deepdml/faster-whisper-large-v3-turbo-ct2](https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2)) in the "Model" dropdown, it will be automatically downloaded in the directory.
 
-![image](https://github.com/user-attachments/assets/76487a46-b0a5-4154-b735-ded73b2d83d4)
 
 # REST API
 If you're interested in deploying this app as a REST API, please check out [/backend](https://github.com/jhj0517/Whisper-WebUI/tree/master/backend).
 
-## TODO🗓
+## TODO
 
-- [x] Add DeepL API translation
-- [x] Add NLLB Model translation
-- [x] Integrate with faster-whisper
-- [x] Integrate with insanely-fast-whisper
-- [x] Integrate with whisperX ( Only speaker diarization part )
-- [x] Add background music separation pre-processing with [UVR](https://github.com/Anjok07/ultimatevocalremovergui)  
-- [x] Add fast api script
-- [ ] Add CLI usages
-- [ ] Support real-time transcription for microphone
 
 ### Translation 🌐
 Any PRs that translate the language into [translation.yaml](https://github.com/jhj0517/Whisper-WebUI/blob/master/configs/translation.yaml) would be greatly appreciated!
+
