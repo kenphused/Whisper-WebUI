@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from modules.whisper.data_classes import *
 from modules.utils.paths import BACKEND_CACHE_DIR
-from modules.whisper.faster_whisper_inference import FasterWhisperInference
+from modules.whisper.whisper_factory import WhisperFactory
+from modules.whisper.base_transcription_pipeline import BaseTranscriptionPipeline
 from backend.common.audio import read_audio
 from backend.common.models import QueueResponse
 from backend.common.config_loader import load_server_config
@@ -24,7 +25,7 @@ from backend.db.task.models import TaskStatus, TaskType
 
 transcription_router = APIRouter(prefix="/transcription", tags=["Transcription"])
 
-_pipeline_cache: Dict[Tuple[str, str], "FasterWhisperInference"] = {}
+_pipeline_cache: Dict[Tuple[str, str, str], BaseTranscriptionPipeline] = {}
 
 
 def create_progress_callback(identifier: str):
@@ -41,12 +42,19 @@ def create_progress_callback(identifier: str):
     return progress_callback
 
 
-def get_pipeline() -> "FasterWhisperInference":
+def get_pipeline() -> BaseTranscriptionPipeline:
     config = load_server_config()["whisper"]
-    key: Tuple[str, str] = (config["model_size"], config["compute_type"])
+    whisper_type = config.get("whisper_type", "faster-whisper")
+    key: Tuple[str, str, str] = (whisper_type, config["model_size"], config["compute_type"])
     if key not in _pipeline_cache:
-        inferencer = FasterWhisperInference(output_dir=BACKEND_CACHE_DIR)
-        inferencer.update_model(model_size=config["model_size"], compute_type=config["compute_type"])
+        inferencer = WhisperFactory.create_whisper_inference(
+            whisper_type=whisper_type,
+            output_dir=BACKEND_CACHE_DIR,
+        )
+        inferencer.update_model(
+            model_size=config["model_size"],
+            compute_type=config["compute_type"],
+        )
         _pipeline_cache[key] = inferencer
     return _pipeline_cache[key]
 
